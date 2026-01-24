@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
+#include "sha256.h"
 
 
 #define WORDSIZE 32
@@ -50,8 +51,7 @@ uint32_t left_rotate (uint32_t n, uint8_t d) {
 }
 
 uint32_t right_rotate (uint32_t n, uint8_t d) {
-  uint32_t temp = (n >> d) | (n << (WORDSIZE-d));
-  return temp;
+  return (n >> d) | (n << (WORDSIZE-d));
 }
 
 uint32_t left_shift (uint32_t n, uint8_t d) {
@@ -63,13 +63,11 @@ uint32_t right_shift (uint32_t n, uint8_t d) {
 }
 
 uint32_t lc_sigma0 (uint32_t x) {
-  uint32_t temp = right_rotate(x, 7) ^ right_rotate(x, 18) ^ right_shift(x, 3);
-  return temp;
+  return right_rotate(x, 7) ^ right_rotate(x, 18) ^ right_shift(x, 3);
 }
 
 uint32_t lc_sigma1 (uint32_t x) {
-  uint32_t temp = right_rotate(x, 17) ^ right_rotate(x, 19) ^ right_shift(x, 10);
-  return temp;
+  return right_rotate(x, 17) ^ right_rotate(x, 19) ^ right_shift(x, 10);
 }
 
 uint32_t cap_sigma0 (uint32_t x) {
@@ -174,24 +172,20 @@ void big_endian(char *buff, uint64_t num_bytes) {
   temp = NULL;
 }
 
-void print_res() {
+char *print_res(char *res_buf) {
   uint8_t *print_buff = (uint8_t *)H;
-  printf("Hash: ");
+
+  uint16_t offset = 0;
   for (int i=0; i<32; i+=4) {
     for (int j=3; j>=0; j--) {
-      printf("%02x", print_buff[i+j]);
+      offset += sprintf(res_buf + offset, "%02x", print_buff[i+j]);
     }
   }
-  printf("\n");
+  res_buf[256] = '\0'; // Add null terminator to string
+  return res_buf;
 }
 
-int main(int argc, char **argv) {
-  if (argc != 2) {
-    printf("Unexpected number of argument. Usage: %s [pass]\n", argv[0]);
-    return 1;
-  }
-
-  char *input = argv[1];
+char *sha256(char *input, char *res_buf) {
   uint64_t inlen = strlen(input);
   uint64_t nchunks = (inlen+8)*8 / 512 + 1; // (input length + 8 bytes for length segment)*number of bits per byte / number of bits per block + 1 to start from a buffer of one block
   uint64_t buffsize = nchunks*512/8;
@@ -203,10 +197,8 @@ int main(int argc, char **argv) {
   pad(buff, inlen, buffsize);
   digest(buff, nchunks);
 
-  print_res();
-
   free(buff);
   buff = NULL;
 
-  return 0;
+  return print_res(res_buf);
 }

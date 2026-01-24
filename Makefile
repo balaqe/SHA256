@@ -1,25 +1,13 @@
-CC = gcc 
-CFLAGS = -Wall -std=c99 -g # "curl-config --cflags" output is empty  
-LD = gcc
-LDFLAGS = -std=c99 -g 
+all: testprog.out
 
-SRCS   = sha256.c
-OBJS1  = sha256.o
-TARGETS= sha256.out
+testprog.out: main.o sha256.o
+	gcc -g -o testprog.out main.o sha256.o
 
-all: ${TARGETS}
+main.o: main.c sha256.h
+	gcc -c main.c
 
-sha256.out: $(OBJS1) 
-	$(LD) -o $@ $^ $(LDFLAGS) $(LDFLAGS) 
+sha256.o: sha256.c sha256.h
+	gcc -c sha256.c
 
-%.o: %.c 
-	$(CC) $(CFLAGS) -c $< 
-
-%.d: %.c
-	gcc -MM -MF $@ $<
-
--include $(SRCS:.c=.d)
-
-.PHONY: clean
 clean:
-	rm -f *~ *.d *.o *~ $(TARGETS)
+	rm *.o *.out *.d
