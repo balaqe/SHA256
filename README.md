@@ -2,8 +2,15 @@
 Case study of SHA256
 
 # Usage
++ Import the library using the header file `sha256.h`
++ Allocate a result buffer
++ Call `sha256(char *input, char *res)` (the resulting hash will be found in the `res` buffer)
+
+# Example program
+For testing, compile the example program by running `make`
+
 ```
-./sha256.out "Your input string here"
+./testprog.out "Your input string here"
 ```
 
 # Notes 
